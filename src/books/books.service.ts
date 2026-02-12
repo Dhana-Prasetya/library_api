@@ -1,42 +1,58 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import pagination from 'src/helper/pagination';
 
 import { PrismaService } from '../prisma.service.js';
-const prisma = new PrismaService();
 
 import response from 'src/helper/response';
 
-interface PaginationResult {
-    skip: number;
-    total: number;
-    totalPages: number;
-}
 
 @Injectable()
 export class BooksService {
+    constructor(private readonly prisma: PrismaService) { }
 
-    async getBooksPaginated(page: string, limit: string) {
+    async getBooksPaginated(page: number, limit: number) { // default pagination values
 
-        const pageInt: number = Number(page);
-        const limitInt: number = Number(limit);
+        try {
 
-        const { skip, total, totalPages } = await pagination({ pageInt, limitInt, table: 'books' });
+            const { skip, total, totalPages } = await pagination(this.prisma, { page, limit, table: 'books' });
 
-        const payload: object = await prisma.books.findMany({
-            skip,
-            take: limitInt,
-            orderBy: { id: "asc" },
-        });
+            const queryResult: object = await this.prisma.books.findMany({
+                skip,
+                take: limit,
+                orderBy: { id: "asc" },
+            });
 
-        return response(payload, 200, 'Paginated books fetched successfully');
+            const payload: object = { page, limit, total, totalPages, results: queryResult };
+
+            return response(payload, 200, 'Paginated books fetched successfully');
+        } catch (error) {
+            console.error(error);
+            throw new InternalServerErrorException(
+                response(null, 500, 'Internal server error')
+            );
+        }
 
     }
 
-    searchBooksPaginated(title: string) {
+    async searchBooksPaginated(title: string) {
+        try {
 
+        } catch (error) {
+            console.error(error);
+            throw new InternalServerErrorException(
+                response(null, 500, 'Internal server error')
+            );
+        }
     }
 
-    booksDetails(id: string) {
+    async booksDetails(id: string) {
+        try {
 
+        } catch (error) {
+            console.error(error);
+            throw new InternalServerErrorException(
+                response(null, 500, 'Internal server error')
+            );
+        }
     }
 }

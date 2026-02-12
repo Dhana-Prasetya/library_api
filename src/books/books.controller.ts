@@ -1,23 +1,28 @@
-import { Body, Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BooksService } from './books.service';
+import { PaginationDto } from 'src/general_dto/pagination.dto';
 
 @Controller('books')
 export class BooksController {
     constructor(private readonly booksService: BooksService) { }
 
     @Get('all')
-    async getBooksPaginated(@Query('page') page: string, @Query('limit') limit: string) {
-        const result = await this.booksService.getBooksPaginated(page, limit);
-        return this.booksService.getBooksPaginated(page, limit);
+    @UsePipes(new ValidationPipe({ transform: true })) // to auto-transform query params to desired types
+    async getBooksPaginated(@Query() query: PaginationDto) {
+        const result = await this.booksService.getBooksPaginated(query.page, query.limit);
+        return result;
     }
 
     @Get('search')
-    searchBooksPaginated(@Query('title') title: string) {
-        return this.booksService.searchBooksPaginated(title);
+    @UsePipes(new ValidationPipe({ transform: true }))
+    async searchBooksPaginated(@Query('title') title: string, @Query() query: PaginationDto) {
+        const result = await this.booksService.searchBooksPaginated(title);
+        return result;
     }
 
-    @Get('details')
-    booksDetails(@Param('id') id: string) {
-        return this.booksService.booksDetails(id);
+    @Get('details/:id')
+    async booksDetails(@Param('id') id: string) {
+        const result = await this.booksService.booksDetails(id);
+        return result;
     }
 }

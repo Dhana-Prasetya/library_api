@@ -1,10 +1,9 @@
-import { PrismaService } from '../prisma.service.js';
-const prisma = new PrismaService();
+import type { PrismaService } from '../prisma.service.js';
 
 // interface for the function parameters
 interface PaginationArgs {
-    pageInt: number;
-    limitInt: number;
+    page: number;
+    limit: number;
     table: string;
 }
 
@@ -15,11 +14,14 @@ interface PaginationResult {
     totalPages: number;
 }
 
-async function pagination({ pageInt, limitInt, table }: PaginationArgs): Promise<PaginationResult> {
-    const skip: number = (pageInt - 1) * limitInt;
+async function pagination(
+    prisma: PrismaService,
+    { page, limit, table }: PaginationArgs
+): Promise<PaginationResult> {
+    const skip: number = (page - 1) * limit;
 
     const total: number = await prisma[table].count();
-    const totalPages: number = Math.ceil(total / limitInt);
+    const totalPages: number = Math.ceil(total / limit);
 
     return {
         skip,
