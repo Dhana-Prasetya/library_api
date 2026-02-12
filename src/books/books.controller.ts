@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { PaginationDto } from 'src/general_dto/pagination.dto';
+import { SearchBooksDto } from './dto/search.dto';
+import { SerialIdDto } from 'src/general_dto/serial_id.dto';
 
 @Controller('books')
 export class BooksController {
@@ -15,14 +17,15 @@ export class BooksController {
 
     @Get('search')
     @UsePipes(new ValidationPipe({ transform: true }))
-    async searchBooksPaginated(@Query('title') title: string, @Query() query: PaginationDto) {
-        const result = await this.booksService.searchBooksPaginated(title);
+    async searchBooksPaginated(@Query() query: SearchBooksDto) {
+        const result = await this.booksService.searchBooksPaginated(query.title, query.page, query.limit);
         return result;
     }
 
     @Get('details/:id')
-    async booksDetails(@Param('id') id: string) {
-        const result = await this.booksService.booksDetails(id);
+    @UsePipes(new ValidationPipe({ transform: true }))
+    async booksDetails(@Param() param: SerialIdDto) {
+        const result = await this.booksService.booksDetails(param.id);
         return result;
     }
 }

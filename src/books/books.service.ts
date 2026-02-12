@@ -34,8 +34,26 @@ export class BooksService {
 
     }
 
-    async searchBooksPaginated(title: string) {
+    async searchBooksPaginated(title: string, page: number, limit: number) {
         try {
+
+            const { skip, total, totalPages } = await pagination(this.prisma, { page, limit, table: 'books' });
+
+            const queryResult: object = await this.prisma.books.findMany({
+                where: {
+                    title: {
+                        contains: title,
+                        mode: "insensitive", // search to ignore case
+                    },
+                },
+                skip,
+                take: limit,
+                orderBy: { id: "asc" },
+            });
+
+            const payload: object = { page, limit, total, totalPages, results: queryResult };
+
+            return response(payload, 200, 'Paginated searched books fetched successfully');
 
         } catch (error) {
             console.error(error);
@@ -45,9 +63,15 @@ export class BooksService {
         }
     }
 
-    async booksDetails(id: string) {
+    async booksDetails(id: number) {
         try {
+            const queryResult: object = await this.prisma.books.findUnique({
+                where: { id },
+            });
 
+            const payload: object = { results: queryResult };
+
+            return response(payload, 200, `Book details for id ${id} fetched successfully`);
         } catch (error) {
             console.error(error);
             throw new InternalServerErrorException(
