@@ -15,6 +15,7 @@ model books {
   genre            genre_enum
   description      String?
   quantity         Int
+  borrowable       Boolean?           @default(true)
   books_borrowment books_borrowment[]
 }
 
@@ -24,8 +25,8 @@ model books_borrowment {
   user_id         String    @db.Uuid
   borrowment_date DateTime? @default(now()) @db.Timestamptz(6)
   returned_status Boolean?  @default(false)
-  books           books     @relation(fields: [book_id], references: [id], onUpdate: NoAction)
-  users           users     @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+  books           books     @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model users {

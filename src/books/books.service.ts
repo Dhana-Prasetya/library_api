@@ -19,7 +19,7 @@ export class BooksService {
             const queryResult: object = await this.prisma.books.findMany({
                 skip,
                 take: limit,
-                orderBy: { id: "asc" },
+                orderBy: { id: "desc" },
             });
 
             const payload: object = { page, limit, total, totalPages, results: queryResult };

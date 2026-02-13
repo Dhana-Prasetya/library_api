@@ -2,9 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as morgan from 'morgan';
 import { Request } from 'express';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(new ValidationPipe({ // Add global validation pipe
+    transform: true,
+  }));
 
   morgan.token('ip', (req: Request) => {
     const forwarded = req.headers['x-forwarded-for'];
