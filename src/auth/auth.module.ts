@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config"; // Import these
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { JwtStrategy } from "./jwt.strategy";
 import { AuthService } from "./auth.service";
+import { RedisService } from "src/helper/redis.config";
 
 @Module({
     imports: [
@@ -22,7 +23,7 @@ import { AuthService } from "./auth.service";
             }),
         }),
     ],
-    providers: [AuthService, JwtStrategy, JwtAuthGuard],
+    providers: [AuthService, JwtStrategy, JwtAuthGuard, RedisService],
     exports: [AuthService, JwtAuthGuard, JwtModule],
 })
 export class AuthModule { }

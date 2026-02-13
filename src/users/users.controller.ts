@@ -25,9 +25,10 @@ export class UsersController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get('logout')
-    async logout() {
-
+    @Patch('logout')
+    async logout(@Req() req) {
+        const result = await this.usersService.logout(req.user?.jti, req.user?.exp);
+        return result;
     }
 
     @UseGuards(JwtAuthGuard)

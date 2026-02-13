@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import pagination from 'src/helper/pagination';
+import { RedisService } from 'src/helper/redis.config';
 // import { PrismaClient } from 'generated/prisma/client.js';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class UsersService {
         private readonly prisma: PrismaService,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
+        private readonly redisService: RedisService,
     ) { }
 
     async registerUser(fullname: string, email: string, password: string) {
@@ -71,8 +73,7 @@ export class UsersService {
             const generateJti: string = uuidv4(); // Unique identifier for the token
 
             const jwtSecret =
-                this.configService.get<string>('JWT_SECRET') ??
-                'dev-secret-change-me';
+                this.configService.get<string>('JWT_SECRET')
 
             const token: string = this.jwtService.sign(
                 {
@@ -102,8 +103,19 @@ export class UsersService {
         }
     }
 
-    async logout() {
+    async logout(jti: string, exp?: number) {
+        if (!jti) {
+            throw new UnauthorizedException(response(null, 401, 'Missing token identifier'));
+        }
+
         try {
+            let ttlSeconds = 3600;
+            if (typeof exp === 'number') {
+                const nowSeconds = Math.floor(Date.now() / 1000);
+                ttlSeconds = Math.max(exp - nowSeconds, 1);
+            }
+
+            await this.redisService.addToBlacklist(jti, ttlSeconds);
             return response(null, 200, 'User logged out successfully');
         } catch (error) {
             console.error(error);
