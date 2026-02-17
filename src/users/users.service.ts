@@ -267,29 +267,32 @@ export class UsersService {
 
             const prismaTransaction = await this.prisma.$transaction(async (tx) => {
 
-                const returnBookStock = await tx.books.update({
+                const queryResult = await tx.books.update({
                     where: { id: id },
                     data: {
+                        // Update book stock
                         quantity: {
                             increment: 1
+                        },
+                        // Update borrowment record
+                        books_borrowment: {
+                            update: {
+                                where: {
+                                    id: isBorrowed.id,
+                                    book_id: id,
+                                    user_id: userId,
+                                },
+                                data: {
+                                    returned_status: true
+                                }
+                            }
                         }
                     }
                 })
 
-                if (!returnBookStock) {
+                if (!queryResult) {
                     throw new Error('BOOK_NOT_EXIST');
                 }
-
-                const queryResult = await tx.books_borrowment.update({
-                    where: {
-                        id: isBorrowed.id,
-                        book_id: id,
-                        user_id: userId,
-                    },
-                    data: {
-                        returned_status: true
-                    }
-                });
 
                 return queryResult;
 
@@ -322,7 +325,7 @@ export class UsersService {
 
             const prismaTransaction = await this.prisma.$transaction(async (tx) => {
 
-                const queryResult = await this.prisma.users.findUnique({
+                const queryResult = await tx.users.findUnique({
                     where: {
                         id: userId,
                     },
