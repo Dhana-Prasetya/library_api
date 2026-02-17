@@ -176,14 +176,6 @@ export class AdminService {
             );
 
             const prismaTransaction = await this.prisma.$transaction(async (tx) => {
-                // Check if book exists first
-                const existingBook = await tx.books.findUnique({
-                    where: { id: id },
-                });
-
-                if (!existingBook) {
-                    throw new Error('BOOK_NOT_FOUND');
-                }
 
                 const queryResult = await tx.books.update({
                     where: { id: id },
@@ -200,7 +192,7 @@ export class AdminService {
 
         } catch (error) {
             console.error(error);
-            if (error.message === 'BOOK_NOT_FOUND') {
+            if (error.code === 'P2025') { // Let postgre reject by itself if no book found
                 throw new NotFoundException(response(null, 404, 'Book not found'));
             }
             throw new InternalServerErrorException(
